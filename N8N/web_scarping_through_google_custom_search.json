@@ -1,0 +1,250 @@
+{
+  "name": "web scarping through google custom search",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -20
+      ],
+      "id": "0e93cfce-9b92-4c7a-a882-4abe09cc3ff8",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyAIM-TPsEn-hI7-D56B9qbcDiAhCoVQbuQ"
+            },
+            {
+              "name": "cx",
+              "value": "831bf2d5deb7047cc"
+            },
+            {
+              "name": "q",
+              "value": "Top companies in Namakkal Tamil Nadu site:tofler.in "
+            },
+            {
+              "name": "start",
+              "value": "21"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -100,
+        -20
+      ],
+      "id": "76d97167-aa4e-416c-81f3-8d5644783467",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1mFFjzozn3EBDCaQbc8eNnUeNM8ofF0pwSN11eC48hWc",
+          "mode": "list",
+          "cachedResultName": "webscrabbing",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mFFjzozn3EBDCaQbc8eNnUeNM8ofF0pwSN11eC48hWc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1866848915,
+          "mode": "list",
+          "cachedResultName": "webscrabbing",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mFFjzozn3EBDCaQbc8eNnUeNM8ofF0pwSN11eC48hWc/edit#gid=1866848915"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Incorporation Date",
+              "displayName": "Incorporation Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company Type",
+              "displayName": "Company Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Authorized Share Capital",
+              "displayName": "Authorized Share Capital",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Link",
+              "displayName": "Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        340,
+        -20
+      ],
+      "id": "00e3637d-d567-434f-8ddc-4980440cfa90",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qe4jgwJaIkSu0ne0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and structure company data\nconst items = $input.all()[0].json.items || [];\n\nconst structuredData = items.map(item => {\n  // Extract incorporation date from snippet\n  const dateMatch = item.snippet.match(/(\\d{1,2} (January|February|March|April|May|June|July|August|September|October|November|December), \\d{4})/);\n  const incorporationDate = dateMatch ? dateMatch[0] : 'Not specified';\n\n  // Extract share capital from snippet\n  const capitalMatch = item.snippet.match(/INR (\\d+\\.?\\d*\\s?(cr|lac|thousand))/i);\n  const shareCapital = capitalMatch ? `INR ${capitalMatch[1]}` : 'Not specified';\n\n  // Determine company type\n  const companyType = item.snippet.includes('public limited') ? 'Public Limited' : \n                     item.snippet.includes('private limited') ? 'Private Limited' : \n                     'Not specified';\n\n  return {\n    'Company Name': item.title.replace('Financials', '').replace('Company Details', '').replace('| Tofler', '').trim(),\n    'Incorporation Date': incorporationDate,\n    'Company Type': companyType,\n    'Location': item.snippet.includes('Namakkal') ? \n               (item.snippet.includes('District') ? 'Namakkal District, Tamil Nadu' : 'Namakkal, Tamil Nadu') : \n               'Not specified',\n    'Authorized Share Capital': shareCapital,\n    'Link': item.link\n  };\n});\n\nreturn structuredData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        -20
+      ],
+      "id": "458b8be8-a780-4b2f-9a13-d105204bf009",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "content": "## http node to get info\n\n-- we use the custom google search api to use the google search\n--the query was put in the q in the http node for the search which you want\n",
+        "height": 420,
+        "width": 180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        -280
+      ],
+      "id": "89b2b6e6-2373-425f-9f86-565fd49408f8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "-- from the raw data we use function node to modify the output which we want and send them into the json data\n",
+        "height": 300,
+        "width": 180,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        80,
+        -180
+      ],
+      "id": "c5f70aeb-83b9-4a84-a19d-44cd208ad4a9",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        []
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "79359ded-fb43-4ed6-81b3-a4072b4b8505",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "754f1595a5333f98c71a385ae239a3c6d1271f14801fcf61c4ad94ceec623443"
+  },
+  "id": "nhaCEa2ZdPSRbUkv",
+  "tags": []
+}
