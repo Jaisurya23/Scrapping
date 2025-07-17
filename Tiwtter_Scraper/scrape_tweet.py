@@ -13,8 +13,8 @@ import pickle
 import os.path
 
 # Twitter login credentials
-username_str = "@jaisurya1262066"
-password_str = "jaisurya@2309"
+username_str = "your username"
+password_str = "your password"
 
 # Set up Chrome options
 options = Options()
